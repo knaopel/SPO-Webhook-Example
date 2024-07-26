@@ -34,7 +34,7 @@ namespace Kgm.Spo.FunctionApps.WebhookExample.Functions
             _logger.LogInformation("Webhook triggered!");
 
             // Prepare the response object
-            HttpResponseData response = null;
+            HttpResponseData response;
 
             if (!string.IsNullOrEmpty(validationToken))
             {

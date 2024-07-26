@@ -4,11 +4,11 @@ namespace Kgm.Spo.FunctionApps.WebhookExample.Options
 {
   public class AzureFunctionOptions
   {
-    public string TenantId { get; set; }
-    public string TenantName { get; set; }
-    public string ClientId { get; set; }
+    public string TenantId { get; set; } = null!;
+    public string TenantName { get; set; } = null!;
+    public string ClientId { get; set; } = null!;
     public StoreName CertificateStoreName { get; set; }
     public StoreLocation CertificateStoreLocation { get; set; }
-    public string CertificateThumbprint { get; set; }
+    public string CertificateThumbprint { get; set; } = null!;
   }
 }

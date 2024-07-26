@@ -99,7 +99,7 @@ namespace Kgm.Spo.FunctionApps.WebhookExample.Functions
       }
     }
 
-    private async Task<string> GetLatestChangeTokenAsync()
+    private async Task<string?> GetLatestChangeTokenAsync()
     {
       // Get a reference to the Azure Storage container
       var containerClient = _blobServiceClient.GetBlobContainerClient("spo-webhooks-storage");
