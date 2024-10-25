@@ -1,0 +1,109 @@
+name: Build, Test, and Deploy the Function App
+
+on:
+  push:
+    branches:
+      - develop
+      - master
+
+  pull_request:
+    branches:
+      - develop
+
+  workflow_dispatch:
+
+concurrency:
+  group: build-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  AZURE_FUNCTION_APP_PACKAGE_FOLDER: function-app-package # --------------------------------------------------- the folder in which to store the function app package
+  BUILD_CONFIGURATION: Release # ------------------------------------------------------------------------------ the build configuration to use
+  DOTNET_VERSION: 8.0.x # ------------------------------------------------------------------------------------- the .net version to use
+  NUGET_CONFIG_FILE_PATH: ./nuget.config # -------------------------------------------------------------------- the path to the nuget config file to use
+  PUBLISH_OUTPUT_FOLDER: publish-output # --------------------------------------------------------------------- the folder in which to store the publish output
+  PUBLISH_PROJECT_PATH: ./src/Pm.Spo.EzTrack.WebHooks.FunctionApp/Pm.Spo.EzTrack.Webhooks.FunctionApp.csproj #  the path to the project to publish
+  SOLUTION_PATH: ./pm-eztrack-webhooks.sln # ------------------------------------------------------------------ the path to the solution *.sln file
+  TEST_RESULTS_FOLDER: test-results # ------------------------------------------------------------------------- the folder in which to store the test results
+  TEST_COVERAGE_SETTINGS_FILE_PATH: ./test/unit-tests/coverlet.runsettings # ---------------------------------- the path to the code coverage settings file
+
+jobs:
+  build-and-test:
+    name: Build and Test the Function App
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install dependencies
+        run: dotnet restore ${{ env.SOLUTION_PATH }}
+
+      - name: Build
+        run: >
+          dotnet build
+          --configuration ${{ env.BUILD_CONFIGURATION }}
+          --no-restore
+          ${{ env.SOLUTION_PATH }}
+
+      # - name: Test
+      #   run: >
+      #     dotnet test
+      #     --configuration ${{ env.BUILD_CONFIGURATION }}
+      #     --no-build
+      #     --verbosity normal
+      #     --results-directory ${{ env.TEST_RESULTS_FOLDER }}
+      #     --logger trx
+      #     --logger console
+      #     --collect:"XPlat Code Coverage"
+      #     --settings ${{ env.TEST_COVERAGE_SETTINGS_FILE_PATH }}
+      #     ${{ env.SOLUTION_PATH }}
+
+      - name: Publish
+        run: >
+          dotnet publish
+          --configuration ${{ env.BUILD_CONFIGURATION }}
+          --no-build
+          --output ${{ env.PUBLISH_OUTPUT_FOLDER }}
+          ${{ env.PUBLISH_PROJECT_PATH }}
+
+      - name: Archive published function app
+        uses: actions/upload-artifact@v4
+        with:
+          name: published-function-app
+          path: ${{ env.PUBLISH_OUTPUT_FOLDER }}
+          if-no-files-found: error
+
+  deploy:
+    name: Deploy the Function app to enviroment
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+    runs-on: [windows-latest]
+    needs: build-and-test
+    environment: ${{ github.ref_name == 'master' && 'production' || github.ref_name == 'env-staging' && 'staging' || 'development' }}
+    steps:
+      - name: Download the published function app
+        uses: actions/download-artifact@v4
+        with:
+          name: published-function-app
+          path: ${{ env.AZURE_FUNCTION_APP_PACKAGE_FOLDER }}
+
+      - name: Login to Azure with identity of hosted Runner
+        run: az login --identity
+
+      - name: Fetch function app publish profile from Azure Key vault
+        id: fetch-func-app-publish-profile
+        uses: azure/get-keyvault-secrets@v1
+        with:
+          keyvault: ${{ vars.AZURE_KEY_VAULT_NAME }}
+          secrets: ${{ vars.AZURE_KEY_VAULT_SECRET_NAME__FUNC_APP_PUBLISH_PROFILE }}
+
+      - name: Deploy to Azure function app
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ vars.AZURE_FUNCTION_APP_NAME }}
+          publish-profile: ${{ steps.fetch-func-app-publish-profile.outputs[vars.AZURE_KEY_VAULT_SECRET_NAME__FUNC_APP_PUBLISH_PROFILE] }}
+          package: ${{ env.AZURE_FUNCTION_APP_PACKAGE_FOLDER }}
