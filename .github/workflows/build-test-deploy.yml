@@ -22,10 +22,10 @@ env:
   DOTNET_VERSION: 8.0.x # ------------------------------------------------------------------------------------- the .net version to use
   NUGET_CONFIG_FILE_PATH: ./nuget.config # -------------------------------------------------------------------- the path to the nuget config file to use
   PUBLISH_OUTPUT_FOLDER: publish-output # --------------------------------------------------------------------- the folder in which to store the publish output
-  PUBLISH_PROJECT_PATH: ./src/Pm.Spo.EzTrack.WebHooks.FunctionApp/Pm.Spo.EzTrack.Webhooks.FunctionApp.csproj #  the path to the project to publish
-  SOLUTION_PATH: ./pm-eztrack-webhooks.sln # ------------------------------------------------------------------ the path to the solution *.sln file
-  TEST_RESULTS_FOLDER: test-results # ------------------------------------------------------------------------- the folder in which to store the test results
-  TEST_COVERAGE_SETTINGS_FILE_PATH: ./test/unit-tests/coverlet.runsettings # ---------------------------------- the path to the code coverage settings file
+  PUBLISH_PROJECT_PATH: ./SPO-Webhook-Example.csproj # -------------------------------------------------------- the path to the project to publish
+  SOLUTION_PATH: ./SPO-Webhook-Example.sln # ------------------------------------------------------------------ the path to the solution *.sln file
+  # TEST_RESULTS_FOLDER: test-results # ------------------------------------------------------------------------- the folder in which to store the test results
+  # TEST_COVERAGE_SETTINGS_FILE_PATH: ./test/unit-tests/coverlet.runsettings # ---------------------------------- the path to the code coverage settings file
 
 jobs:
   build-and-test:
