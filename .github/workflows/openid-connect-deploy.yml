@@ -9,20 +9,19 @@ permissions:
 env:
   AZURE_WEBAPP_NAME: az-func-delete
   AZURE_WEBAPP_PACKAGE_PATH: '.'
+  ARTIFACT_NAME: published-function-app
   DOTNET_VERSION: 8.0.x
+  PUBLISH_OUTPUT_FOLDER: publish-output
+  BUILD_CONFIGURATION: Release
+  SOLUTION_PATH: ./SPO-Webhook-Example.sln
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@main
-      - uses: azure/login@v1
-        with:
-          # client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          # tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          # subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Checkout Repository
+        uses: actions/checkout@main
 
       # Setup .NET core SDK
       - name: Setup .NET Core ${{ env.DOTNET_VERSION }}
@@ -30,19 +29,67 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      # Run dotnet build and publish
-      - name: dotnet build and publish
-        run: |
-          dotnet restore
-          dotnet build --configuration Release
-          dotnet publish -c Release --property:PublishDir='${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp'
+      - name: Install depenecies
+        run: dotnet restore ${{ env.SOLUTION_PATH }}
+
+      - name: Build
+        run: >
+          dotnet build
+          --configuration ${{ env.BUILD_CONFIGURATION }}
+          --no-restore
+          ${{ env.SOLUTION_PATH }}
+
+      - name: Publish
+        run: >
+          dotnet publish
+          --configuration ${{ env.BUILD_CONFIGURATION }}
+          --no-build
+          --output ${{ env.PUBLISH_OUTPUT_FOLDER }}
+
+      - name: List published files
+        run: ls ${{ env.PUBLISH_OUTPUT_FOLDER }}
       
-      # Deploy to Azure WebApps
-      - name: Run Azure webapp deploy action using publish profile credentials
-        uses: azure/webapps-deploy@v3
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
         with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ env.PUBLISH_OUTPUT_FOLDER }}
+          if-no-files-found: error
+  deploy:
+    runs-on: windows-latest
+
+    needs: build
+
+    steps:
+      - name: download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+      - name: List files after download
+        run: ls ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+      - uses: azure/login@v1
+        with:
+          # client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          # tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          # subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # # Run dotnet build and publish
+      # - name: dotnet build and publish
+      #   run: |
+      #     dotnet restore
+      #     dotnet build --configuration Release
+      #     dotnet publish -c Release --property:PublishDir='${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp'
+      
+      # # Deploy to Azure WebApps
+      # - name: Run Azure webapp deploy action using publish profile credentials
+      #   uses: azure/webapps-deploy@v3
+      #   with:
+      #     app-name: ${{ env.AZURE_WEBAPP_NAME }}
+      #     package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp
 
       - name: logout
         run: |
