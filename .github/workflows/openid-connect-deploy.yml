@@ -89,7 +89,7 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          publish-profile: <publishData><publishProfile profileName="az-func-delete - Web Deploy" publishMethod="MSDeploy" publishUrl="az-func-delete.scm.azurewebsites.net:443" msdeploySite="az-func-delete" destinationAppUrl="https://az-func-delete.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="http://windows.azure.com" webSystem="WebSites"></publishdata>
+          publish-profile: <publishData><publishProfile profileName="az-func-delete - Web Deploy" publishMethod="MSDeploy" publishUrl="az-func-delete.scm.azurewebsites.net:443" msdeploySite="az-func-delete" destinationAppUrl="https://az-func-delete.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="http://windows.azure.com" webSystem="WebSites"><databses /></publishData>
           package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
       - name: logout
