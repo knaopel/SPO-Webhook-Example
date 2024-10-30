@@ -25,7 +25,7 @@ jobs:
 
       # Setup .NET core SDK
       - name: Setup .NET Core ${{ env.DOTNET_VERSION }}
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
@@ -44,7 +44,7 @@ jobs:
           dotnet publish
           --configuration ${{ env.BUILD_CONFIGURATION }}
           --no-build
-          --output ${{ env.PUBLISH_OUTPUT_FOLDER }}
+          --property:PublishDir='${{ env.PUBLISH_OUTPUT_FOLDER }}'
 
       - name: List published files
         run: ls ${{ env.PUBLISH_OUTPUT_FOLDER }}
@@ -70,7 +70,7 @@ jobs:
       - name: List files after download
         run: ls ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
-      - uses: azure/login@v1
+      - uses: azure/login@v2
         with:
           # client-id: ${{ secrets.AZURE_CLIENT_ID }}
           # tenant-id: ${{ secrets.AZURE_TENANT_ID }}
