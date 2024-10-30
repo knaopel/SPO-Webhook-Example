@@ -35,20 +35,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup .NET ${{ env.DOTNET_VERSION }}
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+      # - name: Setup .NET ${{ env.DOTNET_VERSION }}
+      #   uses: actions/setup-dotnet@v4
+      #   with:
+      #     dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Install dependencies
-        run: dotnet restore ${{ env.SOLUTION_PATH }}
+      # - name: Install dependencies
+      #   run: dotnet restore ${{ env.SOLUTION_PATH }}
 
-      - name: Build
-        run: >
-          dotnet build
-          --configuration ${{ env.BUILD_CONFIGURATION }}
-          --no-restore
-          ${{ env.SOLUTION_PATH }}
+      # - name: Build
+      #   run: >
+      #     dotnet build
+      #     --configuration ${{ env.BUILD_CONFIGURATION }}
+      #     --no-restore
+      #     ${{ env.SOLUTION_PATH }}
 
       # - name: Test
       #   run: >
@@ -63,47 +63,47 @@ jobs:
       #     --settings ${{ env.TEST_COVERAGE_SETTINGS_FILE_PATH }}
       #     ${{ env.SOLUTION_PATH }}
 
-      - name: Publish
-        run: >
-          dotnet publish
-          --configuration ${{ env.BUILD_CONFIGURATION }}
-          --no-build
-          --output ${{ env.PUBLISH_OUTPUT_FOLDER }}
-          ${{ env.PUBLISH_PROJECT_PATH }}
+      # - name: Publish
+      #   run: >
+      #     dotnet publish
+      #     --configuration ${{ env.BUILD_CONFIGURATION }}
+      #     --no-build
+      #     --output ${{ env.PUBLISH_OUTPUT_FOLDER }}
+      #     ${{ env.PUBLISH_PROJECT_PATH }}
 
-      - name: Archive published function app
-        uses: actions/upload-artifact@v4
-        with:
-          name: published-function-app
-          path: ${{ env.PUBLISH_OUTPUT_FOLDER }}
-          if-no-files-found: error
+      # - name: Archive published function app
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: published-function-app
+      #     path: ${{ env.PUBLISH_OUTPUT_FOLDER }}
+      #     if-no-files-found: error
 
-  deploy:
-    name: Deploy the Function app to enviroment
-    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
-    runs-on: [windows-latest]
-    needs: build-and-test
-    environment: ${{ github.ref_name == 'master' && 'production' || github.ref_name == 'env-staging' && 'staging' || 'development' }}
-    steps:
-      - name: Download the published function app
-        uses: actions/download-artifact@v4
-        with:
-          name: published-function-app
-          path: ${{ env.AZURE_FUNCTION_APP_PACKAGE_FOLDER }}
+  # deploy:
+  #   name: Deploy the Function app to enviroment
+  #   if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+  #   runs-on: [windows-latest]
+  #   needs: build-and-test
+  #   environment: ${{ github.ref_name == 'master' && 'production' || github.ref_name == 'env-staging' && 'staging' || 'development' }}
+  #   steps:
+      # - name: Download the published function app
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: published-function-app
+      #     path: ${{ env.AZURE_FUNCTION_APP_PACKAGE_FOLDER }}
 
-      - name: Login to Azure with identity of hosted Runner
-        run: az login --identity
+      # - name: Login to Azure with identity of hosted Runner
+      #   run: az login --identity
 
-      - name: Fetch function app publish profile from Azure Key vault
-        id: fetch-func-app-publish-profile
-        uses: azure/get-keyvault-secrets@v1
-        with:
-          keyvault: ${{ vars.AZURE_KEY_VAULT_NAME }}
-          secrets: ${{ vars.AZURE_KEY_VAULT_SECRET_NAME__FUNC_APP_PUBLISH_PROFILE }}
+      # - name: Fetch function app publish profile from Azure Key vault
+      #   id: fetch-func-app-publish-profile
+      #   uses: azure/get-keyvault-secrets@v1
+      #   with:
+      #     keyvault: ${{ vars.AZURE_KEY_VAULT_NAME }}
+      #     secrets: ${{ vars.AZURE_KEY_VAULT_SECRET_NAME__FUNC_APP_PUBLISH_PROFILE }}
 
-      - name: Deploy to Azure function app
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: ${{ vars.AZURE_FUNCTION_APP_NAME }}
-          publish-profile: ${{ steps.fetch-func-app-publish-profile.outputs[vars.AZURE_KEY_VAULT_SECRET_NAME__FUNC_APP_PUBLISH_PROFILE] }}
-          package: ${{ env.AZURE_FUNCTION_APP_PACKAGE_FOLDER }}
+      # - name: Deploy to Azure function app
+      #   uses: azure/webapps-deploy@v3
+      #   with:
+      #     app-name: ${{ vars.AZURE_FUNCTION_APP_NAME }}
+      #     publish-profile: ${{ steps.fetch-func-app-publish-profile.outputs[vars.AZURE_KEY_VAULT_SECRET_NAME__FUNC_APP_PUBLISH_PROFILE] }}
+      #     package: ${{ env.AZURE_FUNCTION_APP_PACKAGE_FOLDER }}
