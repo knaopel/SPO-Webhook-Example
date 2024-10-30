@@ -14,6 +14,7 @@ env:
   PUBLISH_OUTPUT_FOLDER: publish-output
   BUILD_CONFIGURATION: Release
   SOLUTION_PATH: ./SPO-Webhook-Example.sln
+  PROJECT_PATH: ./SPO-Webhook-Example.csproj
 
 jobs:
   build:
@@ -43,8 +44,9 @@ jobs:
         run: >
           dotnet publish
           --configuration ${{ env.BUILD_CONFIGURATION }}
-          --no-build
           --property:PublishDir='${{ env.PUBLISH_OUTPUT_FOLDER }}'
+          --verbosity d
+          ${{ env.PROJECT_PATH }}
 
       - name: List published files
         run: ls ${{ env.PUBLISH_OUTPUT_FOLDER }}
