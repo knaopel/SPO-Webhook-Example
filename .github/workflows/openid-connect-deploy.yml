@@ -88,7 +88,7 @@ jobs:
       
       # Deploy to Azure WebApps
       - name: Run Azure webapp deploy action using publish profile credentials
-        uses: azure/webapps-deploy@v3
+        uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           # publish-profile: <publishData><publishProfile profileName="az-func-delete - Web Deploy" publishMethod="MSDeploy" publishUrl="az-func-delete.scm.azurewebsites.net:443" msdeploySite="az-func-delete" userName="REDACTED" userPWD="REDACTED" destinationAppUrl="https://az-func-delete.azurewebsites.net" SQLServerDBConnectionString="REDACTED" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="https://portal.azure.com" webSystem="WebSites"><databases /></publishProfile><publishProfile profileName="az-func-delete - FTP" publishMethod="FTP" publishUrl="ftps://waws-prod-ch1-067.ftp.azurewebsites.windows.net/site/wwwroot" ftpPassiveMode="True" userName="REDACTED" userPWD="REDACTED" destinationAppUrl="https://az-func-delete.azurewebsites.net" SQLServerDBConnectionString="REDACTED" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="https://portal.azure.com" webSystem="WebSites"><databases /></publishProfile><publishProfile profileName="az-func-delete - Zip Deploy" publishMethod="ZipDeploy" publishUrl="az-func-delete.scm.azurewebsites.net:443" userName="REDACTED" userPWD="REDACTED" destinationAppUrl="https://az-func-delete.azurewebsites.net" SQLServerDBConnectionString="REDACTED" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="https://portal.azure.com" webSystem="WebSites"><databases /></publishProfile></publishData>
